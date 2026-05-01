@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:vm="using:KeyVaultHelper.ViewModels"
+             xmlns:v="using:KeyVaultHelper.Views"
+             x:Class="KeyVaultHelper.Views.KeyVaultTabView"
+             x:DataType="vm:KeyVaultTabViewModel">
+    <DockPanel>
+        <!-- Breadcrumb -->
+        <TextBlock DockPanel.Dock="Top"
+                   Text="{Binding BreadcrumbPath}"/>
+
+        <!-- Secrets List -->
+        <ListBox ItemsSource="{Binding Secrets}" SelectionMode="Toggle" ScrollViewer.VerticalScrollBarVisibility="Auto">
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <v:SelectableSecretView />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </DockPanel>
+</UserControl>

@@ -1,6 +1,7 @@
 <Window xmlns="https://github.com/avaloniaui"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:vm="using:KeyVaultHelper.ViewModels"
+        xmlns:v="using:KeyVaultHelper.Views"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d" d:DesignWidth="800" d:DesignHeight="450"
@@ -17,14 +18,27 @@
 
     <NativeMenu.Menu>
         <NativeMenu>
-            <!-- Open new vault (tab) -->
-            <!-- Quick select (modal) -->
-            <NativeMenuItem Header="Vault" />
+            <NativeMenuItem Header="Vault">
+                <NativeMenu>
+                    <NativeMenuItem Header="Open..." Command="{Binding OpenNewVaultCommand}" />
+                </NativeMenu>
+            </NativeMenuItem>
         </NativeMenu>
     </NativeMenu.Menu>
 
     <DockPanel>
         <NativeMenuBar DockPanel.Dock="Top" />
-        <TextBlock Text="Welcome to Avalonia!"></TextBlock>
+        <TabControl ItemsSource="{Binding OpenTabs}" SelectedItem="{Binding SelectedTab}">
+            <TabControl.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding KeyVaultName}" />
+                </DataTemplate>
+            </TabControl.ItemTemplate>
+            <TabControl.ContentTemplate>
+                <DataTemplate>
+                    <v:KeyVaultTabView DataContext="{Binding}" />
+                </DataTemplate>
+            </TabControl.ContentTemplate>
+        </TabControl>
     </DockPanel>
 </Window>
