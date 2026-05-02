@@ -1,5 +1,4 @@
 using Avalonia.Controls;
-using KeyVaultHelper.Models.Data;
 using KeyVaultHelper.ViewModels;
 
 namespace KeyVaultHelper.Views;
