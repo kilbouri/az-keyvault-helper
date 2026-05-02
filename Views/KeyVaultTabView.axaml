@@ -6,16 +6,6 @@
              x:DataType="vm:KeyVaultTabViewModel">
     <DockPanel>
         <!-- Breadcrumb -->
-        <TextBlock DockPanel.Dock="Top"
-                   Text="{Binding BreadcrumbPath}"/>
-
-        <!-- Secrets List -->
-        <ListBox ItemsSource="{Binding Secrets}" SelectionMode="Toggle" ScrollViewer.VerticalScrollBarVisibility="Auto">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
-                    <v:SelectableSecretView />
-                </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+        <TextBlock DockPanel.Dock="Top" Text="{Binding BreadcrumbPath}"/>
     </DockPanel>
 </UserControl>

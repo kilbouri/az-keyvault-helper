@@ -2,9 +2,9 @@ using Avalonia.Controls;
 
 namespace KeyVaultHelper.Views;
 
-public partial class SelectableSecretView : UserControl
+public partial class NotificationView : UserControl
 {
-    public SelectableSecretView()
+    public NotificationView()
     {
         InitializeComponent();
     }

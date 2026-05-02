@@ -1,3 +1,3 @@
 namespace KeyVaultHelper.Models.Data;
 
-public record Subscription(string Name);
+public record Subscription(string Id, string Name);
