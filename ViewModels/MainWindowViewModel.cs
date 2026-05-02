@@ -1,7 +1,5 @@
 ﻿using System.Collections.ObjectModel;
-using System.Windows.Input;
 using Avalonia.Controls;
-using Avalonia.Data;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using KeyVaultHelper.Models.Data;
@@ -49,7 +47,7 @@ public partial class MainWindowViewModel : ViewModelBase
     /// </summary>
     private async Task OpenVaultAsync()
     {
-        var dialogViewModel = new OpenVaultDialogViewModel(_indexService, _notificationService);
+        var dialogViewModel = new OpenVaultDialogViewModel(_indexService);
         var dialog = new OpenVaultDialog() { DataContext = dialogViewModel };
 
         var result = await dialog.ShowDialog<KeyVault?>(GetMainWindow()!);

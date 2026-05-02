@@ -6,80 +6,40 @@
         mc:Ignorable="d" d:DesignWidth="500" d:DesignHeight="400"
         x:Class="KeyVaultHelper.Views.OpenVaultDialog"
         x:DataType="vm:OpenVaultDialogViewModel"
-        Title="Open Key Vault"
+        Title="Open Vault"
         WindowStartupLocation="CenterOwner"
         CanResize="False"
         Width="500"
-        Height="300"
-        ShowInTaskbar="False">
+        Height="300">
 
-    <StackPanel Spacing="20">
+    <StackPanel>
         <!-- Subscription Selector -->
-        <StackPanel Spacing="8">
+        <StackPanel>
             <TextBlock Text="Subscription" FontWeight="Bold" />
-            <Grid ColumnDefinitions="*,Auto">
-                <ComboBox ItemsSource="{Binding Subscriptions}"
-                          DisplayMemberBinding="{Binding Name}"
-                          SelectedItem="{Binding SelectedSubscription}"
-                          PlaceholderText="Select a subscription..." />
-                <Button Content="🔄"
-                        Command="{Binding RefreshSubscriptionsCommand}"
-                        Width="36"
-                        Height="36"
-                        Grid.Column="1"
-                        Margin="8,0,0,0"
-                        ToolTip.Tip="Refresh subscriptions" />
-            </Grid>
+            <ComboBox ItemsSource="{Binding Subscriptions}"
+                      DisplayMemberBinding="{Binding Name}"
+                      SelectedItem="{Binding SelectedSubscription}"
+                      PlaceholderText="Select a subscription..." />
         </StackPanel>
 
         <!-- Resource Group Selector -->
-        <StackPanel Spacing="8" IsEnabled="{Binding SelectedSubscription, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+        <StackPanel IsEnabled="{Binding SelectedSubscription, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
             <TextBlock Text="Resource Group" FontWeight="Bold" />
-            <Grid ColumnDefinitions="*,Auto,Auto">
-                <ComboBox ItemsSource="{Binding FilteredResourceGroups}"
-                          DisplayMemberBinding="{Binding Name}"
-                          SelectedItem="{Binding SelectedResourceGroup}"
-                          PlaceholderText="Select a resource group..."
-                          IsEnabled="{Binding !IsResourceGroupsLoading}" />
-                <Button Content="🔄"
-                        Command="{Binding RefreshResourceGroupsCommand}"
-                        Width="36"
-                        Height="36"
-                        Grid.Column="1"
-                        Margin="8,0,0,0"
-                        ToolTip.Tip="Refresh resource groups for this subscription" />
-                <TextBlock Text="⏳"
-                           Grid.Column="2"
-                           Margin="8,0,0,0"
-                           VerticalAlignment="Center"
-                           IsVisible="{Binding IsResourceGroupsLoading}"
-                           ToolTip.Tip="Loading..." />
-            </Grid>
+            <ComboBox ItemsSource="{Binding FilteredResourceGroups}"
+                      DisplayMemberBinding="{Binding Name}"
+                      SelectedItem="{Binding SelectedResourceGroup}"
+                      PlaceholderText="Select a resource group..."
+                      IsEnabled="{Binding HasSelectedSubscription}" />
         </StackPanel>
 
         <!-- Vault Selector -->
-        <StackPanel Spacing="8" IsEnabled="{Binding SelectedResourceGroup, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
+        <StackPanel IsEnabled="{Binding SelectedResourceGroup, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
             <TextBlock Text="Key Vault" FontWeight="Bold" />
-            <Grid ColumnDefinitions="*,Auto,Auto">
-                <ComboBox ItemsSource="{Binding FilteredVaults}"
-                          SelectedItem="{Binding SelectedVault}"
-                          DisplayMemberBinding="{Binding Id}"
-                          PlaceholderText="Select a key vault..."
-                          IsEnabled="{Binding !IsVaultsLoading}" />
-                <Button Content="🔄"
-                        Command="{Binding RefreshVaultsCommand}"
-                        Width="36"
-                        Height="36"
-                        Grid.Column="1"
-                        Margin="8,0,0,0"
-                        ToolTip.Tip="Refresh vaults in this resource group" />
-                <TextBlock Text="⏳"
-                           Grid.Column="2"
-                           Margin="8,0,0,0"
-                           VerticalAlignment="Center"
-                           IsVisible="{Binding IsVaultsLoading}"
-                           ToolTip.Tip="Loading..." />
-            </Grid>
+            <ComboBox ItemsSource="{Binding FilteredVaults}"
+                      SelectedItem="{Binding SelectedVault}"
+                      DisplayMemberBinding="{Binding Id}"
+                      PlaceholderText="Select a key vault..."
+                      IsEnabled="{Binding HasSelectedResourceGroup}" />
         </StackPanel>
 
         <!-- Buttons -->
@@ -92,7 +52,7 @@
             <Button Content="Open"
                     Grid.Column="2"
                     Width="100"
-                    IsEnabled="{Binding IsOpenEnabled}"
+                    IsEnabled="{Binding HasSelectedVault}"
                     Click="OnOpenClick" />
         </Grid>
     </StackPanel>
