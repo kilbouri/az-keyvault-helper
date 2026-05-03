@@ -5,14 +5,14 @@ using CommunityToolkit.Mvvm.Input;
 using KeyVaultHelper.Models.Data;
 using KeyVaultHelper.Services;
 using KeyVaultHelper.Views;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace KeyVaultHelper.ViewModels;
 
 public partial class MainWindowViewModel : ViewModelBase
 {
-    private readonly AzureResourceService _azureService;
-    private readonly AzureResourceCache _indexService;
-    private readonly NotificationService _notificationService;
+    private readonly AzureResourceCache _resourceCache;
+    private readonly IServiceProvider _serviceProvider;
 
     [ObservableProperty]
     public partial ObservableCollection<KeyVaultTabViewModel> OpenTabs { get; set; }
@@ -25,23 +25,23 @@ public partial class MainWindowViewModel : ViewModelBase
 
     public IAsyncRelayCommand OpenVaultCommand { get; }
 
-    public MainWindowViewModel()
+    public MainWindowViewModel(AzureResourceCache resourceCache, IServiceProvider serviceProvider)
     {
-        _azureService = new AzureResourceService(new AzureUserService());
-        _notificationService = new NotificationService();
-        _indexService = new AzureResourceCache(_azureService);
-
         OpenTabs = [];
         OpenVaultCommand = new AsyncRelayCommand(OpenVaultAsync);
 
-        // Bind cache loading state
-        _indexService.PropertyChanged += (s, e) =>
+        _serviceProvider = serviceProvider;
+
+        _resourceCache = resourceCache;
+        _resourceCache.PropertyChanged += (s, e) =>
         {
             if (e.PropertyName == nameof(AzureResourceCache.RefreshPhase))
             {
-                IsCacheLoading = _indexService.RefreshPhase is not null;
+                IsCacheLoading = _resourceCache.RefreshPhase is not null;
             }
         };
+
+        _ = InitializeAsync();
     }
 
     /// <summary>
@@ -52,7 +52,7 @@ public partial class MainWindowViewModel : ViewModelBase
     {
         try
         {
-            await _indexService.ReloadSubscriptionsAsync();
+            await _resourceCache.ReloadSubscriptionsAsync();
             Console.WriteLine("Initial resource cache has loaded");
         }
         catch (Exception ex)
@@ -66,7 +66,7 @@ public partial class MainWindowViewModel : ViewModelBase
     /// </summary>
     private async Task OpenVaultAsync()
     {
-        var dialogViewModel = new OpenVaultDialogViewModel(_indexService);
+        var dialogViewModel = _serviceProvider.GetRequiredService<OpenVaultDialogViewModel>();
         var dialog = new OpenVaultDialog() { DataContext = dialogViewModel };
 
         var result = await dialog.ShowDialog<KeyVault?>(GetMainWindow()!);
