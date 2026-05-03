@@ -14,7 +14,14 @@ public partial class MainWindow : Window
         // Initialize index service in background on window load
         Loaded += async (s, e) =>
         {
-            await viewModel.InitializeAsync();
+            try
+            {
+                await viewModel.InitializeAsync();
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine($"Failed to initialize: {ex.Message}");
+            }
         };
     }
 }

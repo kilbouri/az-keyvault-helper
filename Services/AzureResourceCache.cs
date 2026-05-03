@@ -8,7 +8,7 @@ namespace KeyVaultHelper.Services;
 /// Manages a hierarchical cache of subscriptions, resource groups, and key vaults.
 /// Supports partial refresh operations that cascade deletion of dependent items.
 /// </summary>
-public class AzureResourceCache(AzureResourceService _azureService) : ObservableObject
+public partial class AzureResourceCache(AzureResourceService _azureService) : ObservableObject
 {
     private sealed class SubscriptionCache : Dictionary<string, SubscriptionCache.Item>
     {
@@ -25,37 +25,53 @@ public class AzureResourceCache(AzureResourceService _azureService) : Observable
         public sealed record Item(KeyVault KeyVault);
     }
 
+    public abstract record CacheRefreshPhase;
+    public record ListSubscriptionsPhase : CacheRefreshPhase;
+    public record ListResourcesInSubscriptionPhase(Subscription Subscription) : CacheRefreshPhase;
+
+    [ObservableProperty]
+    public partial CacheRefreshPhase? RefreshPhase { get; set; }
+
     private SubscriptionCache? _subscriptionCache;
 
     public async Task ReloadSubscriptionsAsync(CancellationToken cancellationToken = default)
     {
-        var subscriptionJobs = _azureService
-            .PageSubscriptionsAsync(cancellationToken)
-            .Select(page => page.Select(sub => (
-                Subscription: sub,
-                Vaults: _azureService.PageKeyVaultsAsync(sub, cancellationToken)
-            )))
-            .Flatten()
-            .ConfigureAwait(false);
-
-        SubscriptionCache newSubscriptionCache = new();
-
-        await foreach (var subscriptionJob in subscriptionJobs)
+        try
         {
-            ResourceGroupCache resourceGroupCache = new();
+            RefreshPhase = new ListSubscriptionsPhase();
+            var subscriptionJobs = _azureService
+                .PageSubscriptionsAsync(cancellationToken)
+                .Select(page => page.Select(sub => (
+                    Subscription: sub,
+                    Vaults: _azureService.PageKeyVaultsAsync(sub, cancellationToken)
+                )))
+                .Flatten()
+                .ConfigureAwait(false)
+                .WithCancellation(cancellationToken);
 
-            await foreach (var vault in subscriptionJob.Vaults.Flatten().ConfigureAwait(false))
+            SubscriptionCache newSubscriptionCache = new();
+            await foreach (var subscriptionJob in subscriptionJobs)
             {
-                var rgVaultCache = resourceGroupCache.GetOrInsert(vault.ResourceGroup.Name, new(vault.ResourceGroup, new KeyVaultCache()));
-                rgVaultCache.KeyVaults.Add(vault.Id, new(vault));
+                RefreshPhase = new ListResourcesInSubscriptionPhase(subscriptionJob.Subscription);
+
+                ResourceGroupCache resourceGroupCache = new();
+                await foreach (var vault in subscriptionJob.Vaults.Flatten().ConfigureAwait(false).WithCancellation(cancellationToken))
+                {
+                    var rgVaultCache = resourceGroupCache.GetOrInsert(vault.ResourceGroup.Name, new(vault.ResourceGroup, new KeyVaultCache()));
+                    rgVaultCache.KeyVaults.Add(vault.Id, new(vault));
+                }
+
+                newSubscriptionCache.Add(subscriptionJob.Subscription.Id, new(subscriptionJob.Subscription, resourceGroupCache));
             }
 
-            newSubscriptionCache.Add(subscriptionJob.Subscription.Id, new(subscriptionJob.Subscription, resourceGroupCache));
+            if (!cancellationToken.IsCancellationRequested)
+            {
+                _subscriptionCache = newSubscriptionCache;
+            }
         }
-
-        if (!cancellationToken.IsCancellationRequested)
+        finally
         {
-            _subscriptionCache = newSubscriptionCache;
+            RefreshPhase = null;
         }
     }
 

@@ -1,5 +1,4 @@
 using System.Runtime.CompilerServices;
-using Azure.Core;
 using Azure.Identity;
 using Azure.ResourceManager;
 using Azure.ResourceManager.KeyVault;
@@ -12,27 +11,12 @@ namespace KeyVaultHelper.Services;
 /// Service for interacting with Azure resources (subscriptions, resource groups, key vaults, and secrets).
 /// Handles authentication and permission errors gracefully.
 /// </summary>
-public class AzureResourceService
+/// <remarks>
+/// Uses the <see cref="AzureCliCredential" /> to authenticate with Azure.
+/// </remarks>
+public class AzureResourceService(AzureUserService azureUserService)
 {
-    private readonly ArmClient _resourceClient;
-    private readonly TokenCredential _azureCredential;
-
-
-    /// <summary>
-    /// Uses the <see cref="DefaultAzureCredential" /> with interactive authentication enabled.
-    /// </summary>
-    public AzureResourceService()
-    {
-        try
-        {
-            _azureCredential = new DefaultAzureCredential(includeInteractiveCredentials: true);
-            _resourceClient = new ArmClient(_azureCredential);
-        }
-        catch (Exception ex)
-        {
-            throw new AzureAuthenticationException("Failed to initialize Azure authentication. Ensure you are logged in via Azure CLI or have appropriate environment credentials.", ex);
-        }
-    }
+    private readonly ArmClient _resourceClient = azureUserService.GetAzureResourceClient();
 
     /// <summary>
     /// Lists all subscriptions the authenticated user has access to.
@@ -115,8 +99,3 @@ public class AzureResourceService
         }
     }
 }
-
-/// <summary>
-/// Exception thrown when Azure authentication fails (invalid credentials, not logged in, etc.).
-/// </summary>
-public class AzureAuthenticationException(string message, Exception? innerException = null) : Exception(message, innerException);

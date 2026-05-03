@@ -10,6 +10,7 @@ namespace KeyVaultHelper.ViewModels;
 
 public partial class MainWindowViewModel : ViewModelBase
 {
+    private readonly AzureResourceService _azureService;
     private readonly AzureResourceCache _indexService;
     private readonly NotificationService _notificationService;
 
@@ -19,17 +20,28 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     public partial KeyVaultTabViewModel? SelectedTab { get; set; }
 
-    public NotificationService NotificationService => _notificationService;
+    [ObservableProperty]
+    public partial bool IsCacheLoading { get; set; }
+
     public IAsyncRelayCommand OpenVaultCommand { get; }
 
     public MainWindowViewModel()
     {
-        var azureService = new AzureResourceService();
+        _azureService = new AzureResourceService(new AzureUserService());
         _notificationService = new NotificationService();
-        _indexService = new AzureResourceCache(azureService);
+        _indexService = new AzureResourceCache(_azureService);
 
         OpenTabs = [];
         OpenVaultCommand = new AsyncRelayCommand(OpenVaultAsync);
+
+        // Bind cache loading state
+        _indexService.PropertyChanged += (s, e) =>
+        {
+            if (e.PropertyName == nameof(AzureResourceCache.RefreshPhase))
+            {
+                IsCacheLoading = _indexService.RefreshPhase is not null;
+            }
+        };
     }
 
     /// <summary>
@@ -38,8 +50,15 @@ public partial class MainWindowViewModel : ViewModelBase
     /// </summary>
     public async Task InitializeAsync()
     {
-        await _indexService.ReloadSubscriptionsAsync();
-        Console.WriteLine("Initial resource cache has loaded");
+        try
+        {
+            await _indexService.ReloadSubscriptionsAsync();
+            Console.WriteLine("Initial resource cache has loaded");
+        }
+        catch (Exception ex)
+        {
+            Console.Error.WriteLine($"Error: {ex.Message}");
+        }
     }
 
     /// <summary>
@@ -62,6 +81,14 @@ public partial class MainWindowViewModel : ViewModelBase
     /// </summary>
     public void OpenKeyVault(KeyVault keyVault)
     {
+        // This is sufficient because Azure requires all KeyVaults to have a unique name
+        var existingTab = OpenTabs.FirstOrDefault(vm => vm.KeyVaultName == keyVault.Id);
+        if (existingTab is not null)
+        {
+            SelectedTab = existingTab;
+            return;
+        }
+
         var tabViewModel = new KeyVaultTabViewModel(keyVault);
         OpenTabs.Add(tabViewModel);
         SelectedTab = tabViewModel;

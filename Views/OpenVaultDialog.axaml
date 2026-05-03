@@ -10,12 +10,28 @@
         WindowStartupLocation="CenterOwner"
         CanResize="False"
         Width="500"
-        Height="300">
+        SizeToContent="Height"
+        MinHeight="300">
 
-    <StackPanel>
+    <StackPanel Margin="20">
+        <!-- Loading Indicator -->
+        <Border IsVisible="{Binding IsLoadingResources}"
+                Background="#F0F0F0"
+                CornerRadius="4"
+                Margin="0,0,0,16"
+                Padding="12">
+            <StackPanel>
+                <ProgressBar IsIndeterminate="True" Height="4" Margin="0,0,0,8"/>
+                <TextBlock Text="{Binding LoadingMessage, StringFormat='Loading... {0}'}"
+                           Foreground="#666666"
+                           FontSize="12"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+
         <!-- Subscription Selector -->
-        <StackPanel>
-            <TextBlock Text="Subscription" FontWeight="Bold" />
+        <StackPanel Margin="0,0,0,12" IsEnabled="{Binding !IsLoadingResources}">
+            <TextBlock Text="Subscription" FontWeight="Bold" Margin="0,0,0,4"/>
             <ComboBox ItemsSource="{Binding Subscriptions}"
                       DisplayMemberBinding="{Binding Name}"
                       SelectedItem="{Binding SelectedSubscription}"
@@ -23,8 +39,8 @@
         </StackPanel>
 
         <!-- Resource Group Selector -->
-        <StackPanel IsEnabled="{Binding SelectedSubscription, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-            <TextBlock Text="Resource Group" FontWeight="Bold" />
+        <StackPanel Margin="0,0,0,12">
+            <TextBlock Text="Resource Group" FontWeight="Bold" Margin="0,0,0,4"/>
             <ComboBox ItemsSource="{Binding FilteredResourceGroups}"
                       DisplayMemberBinding="{Binding Name}"
                       SelectedItem="{Binding SelectedResourceGroup}"
@@ -33,8 +49,8 @@
         </StackPanel>
 
         <!-- Vault Selector -->
-        <StackPanel IsEnabled="{Binding SelectedResourceGroup, Converter={x:Static StringConverters.IsNotNullOrEmpty}}">
-            <TextBlock Text="Key Vault" FontWeight="Bold" />
+        <StackPanel Margin="0,0,0,16">
+            <TextBlock Text="Key Vault" FontWeight="Bold" Margin="0,0,0,4"/>
             <ComboBox ItemsSource="{Binding FilteredVaults}"
                       SelectedItem="{Binding SelectedVault}"
                       DisplayMemberBinding="{Binding Id}"
@@ -43,12 +59,13 @@
         </StackPanel>
 
         <!-- Buttons -->
-        <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,20,0,0">
+        <Grid ColumnDefinitions="*,Auto,Auto">
             <Button Content="Cancel"
                     Grid.Column="1"
                     Width="100"
                     Margin="0,0,8,0"
-                    Click="OnCancelClick" />
+                    Click="OnCancelClick"
+                    IsEnabled="{Binding !IsLoadingResources}"/>
             <Button Content="Open"
                     Grid.Column="2"
                     Width="100"
