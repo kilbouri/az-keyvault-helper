@@ -2,7 +2,6 @@
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using KeyVaultHelper.Models;
 using KeyVaultHelper.Models.Data;
 using KeyVaultHelper.Services;
 using KeyVaultHelper.Views;
@@ -21,15 +20,9 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     public partial KeyVaultTabViewModel? SelectedTab { get; set; }
 
-    [ObservableProperty]
-    public partial bool IsLoadingResources { get; set; }
 
-    [ObservableProperty]
-    public partial string? ResourceLoadError { get; set; }
 
     public IAsyncRelayCommand OpenVaultCommand { get; }
-
-    public IAsyncRelayCommand RetryLoadCommand { get; }
 
     public MainWindowViewModel(AzureResourceCache resourceCache, IServiceProvider serviceProvider)
     {
@@ -37,24 +30,13 @@ public partial class MainWindowViewModel : ViewModelBase
         _serviceProvider = serviceProvider;
 
         OpenTabs = [];
-        OpenVaultCommand = new AsyncRelayCommand(OpenVaultAsync);
-        RetryLoadCommand = new AsyncRelayCommand(async () => await _resourceCache.ReloadSubscriptionsAsync());
-        _ = InitializeAsync();
-    }
-
-    /// <summary>
-    /// Initializes the cache and starts background loading of subscriptions, RGs, and vaults.
-    /// Should be called when the window loads. Does not block the UI.
-    /// </summary>
-    public async Task InitializeAsync()
-    {
-        await _resourceCache.ReloadSubscriptionsAsync();
+        OpenVaultCommand = new AsyncRelayCommand(ShowOpenVaultDialogAsync);
     }
 
     /// <summary>
     /// Opens the OpenVaultDialog modal and adds the selected vault as a new tab.
     /// </summary>
-    private async Task OpenVaultAsync()
+    private async Task ShowOpenVaultDialogAsync()
     {
         var dialogViewModel = _serviceProvider.GetRequiredService<OpenVaultDialogViewModel>();
         var dialog = new OpenVaultDialog() { DataContext = dialogViewModel };

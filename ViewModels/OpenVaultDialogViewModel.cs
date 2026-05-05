@@ -1,7 +1,5 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
-using KeyVaultHelper.Models;
 using KeyVaultHelper.Models.Data;
 using KeyVaultHelper.Services;
 
@@ -11,9 +9,9 @@ namespace KeyVaultHelper.ViewModels;
 /// ViewModel for the Open Vault dialog modal.
 /// Manages subscription, resource group, and vault selection with cascading dropdowns.
 /// </summary>
-public partial class OpenVaultDialogViewModel : ViewModelBase
+public partial class OpenVaultDialogViewModel(AzureResourceCache indexService) : ViewModelBase
 {
-    private readonly AzureResourceCache _indexService;
+    private readonly AzureResourceCache _indexService = indexService;
 
     [ObservableProperty]
     public partial Subscription? SelectedSubscription { get; set; }
@@ -34,13 +32,13 @@ public partial class OpenVaultDialogViewModel : ViewModelBase
     public partial bool HasSelectedVault { get; set; }
 
     [ObservableProperty]
-    public partial ObservableCollection<Subscription> Subscriptions { get; set; }
+    public partial ObservableCollection<Subscription> Subscriptions { get; set; } = [];
 
     [ObservableProperty]
-    public partial ObservableCollection<ResourceGroup> FilteredResourceGroups { get; set; }
+    public partial ObservableCollection<ResourceGroup> FilteredResourceGroups { get; set; } = [];
 
     [ObservableProperty]
-    public partial ObservableCollection<KeyVault> FilteredVaults { get; set; }
+    public partial ObservableCollection<KeyVault> FilteredVaults { get; set; } = [];
 
     [ObservableProperty]
     public partial bool IsLoadingResources { get; set; }
@@ -50,15 +48,6 @@ public partial class OpenVaultDialogViewModel : ViewModelBase
 
     [ObservableProperty]
     public partial string? ResourceLoadError { get; set; }
-
-    public OpenVaultDialogViewModel(AzureResourceCache indexService)
-    {
-        _indexService = indexService;
-
-        Subscriptions = [];
-        FilteredResourceGroups = [];
-        FilteredVaults = [];
-    }
 
     partial void OnSelectedSubscriptionChanged(Subscription? value)
     {

@@ -30,21 +30,6 @@
     <DockPanel>
         <NativeMenuBar DockPanel.Dock="Top" />
 
-        <!-- Loading/Error Bar -->
-        <Border DockPanel.Dock="Top"
-                IsVisible="{Binding IsLoadingResources}"
-                Background="#F0F0F0"
-                Padding="12"
-                BorderThickness="0,0,0,1"
-                BorderBrush="#E0E0E0">
-            <StackPanel>
-                <ProgressBar IsIndeterminate="True" Height="4" Margin="0,0,0,8"/>
-                <TextBlock Text="Loading resources from Azure..."
-                           Foreground="#666666"
-                           FontSize="12"/>
-            </StackPanel>
-        </Border>
-
         <!-- Main content -->
         <TabControl ItemsSource="{Binding OpenTabs}" SelectedItem="{Binding SelectedTab}">
             <TabControl.ItemTemplate>

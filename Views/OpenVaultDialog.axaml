@@ -14,21 +14,6 @@
         MinHeight="300">
 
     <StackPanel Margin="20">
-        <!-- Loading Indicator -->
-        <Border IsVisible="{Binding IsLoadingResources}"
-                Background="#F0F0F0"
-                CornerRadius="4"
-                Margin="0,0,0,16"
-                Padding="12">
-            <StackPanel>
-                <ProgressBar IsIndeterminate="True" Height="4" Margin="0,0,0,8"/>
-                <TextBlock Text="{Binding LoadingMessage, StringFormat='Loading... {0}'}"
-                           Foreground="#666666"
-                           FontSize="12"
-                           TextWrapping="Wrap"/>
-            </StackPanel>
-        </Border>
-
         <!-- Subscription Selector -->
         <StackPanel Margin="0,0,0,12" IsEnabled="{Binding !IsLoadingResources}">
             <TextBlock Text="Subscription" FontWeight="Bold" Margin="0,0,0,4"/>
