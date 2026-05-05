@@ -11,7 +11,6 @@ public sealed class AzureUserService
 
     public AzureUserService()
     {
-        // TODO: we can disk-cache both this credential and the interactive browser one, but we have to do so in order
         _userCredential = new AzureCliCredential();
         _azureClient = new(_userCredential);
     }

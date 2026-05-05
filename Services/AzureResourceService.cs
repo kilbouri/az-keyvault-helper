@@ -9,7 +9,6 @@ namespace KeyVaultHelper.Services;
 
 /// <summary>
 /// Service for interacting with Azure resources (subscriptions, resource groups, key vaults, and secrets).
-/// Handles authentication and permission errors gracefully.
 /// </summary>
 /// <remarks>
 /// Uses the <see cref="AzureCliCredential" /> to authenticate with Azure.

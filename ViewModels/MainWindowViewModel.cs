@@ -2,6 +2,7 @@
 using Avalonia.Controls;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using KeyVaultHelper.Models;
 using KeyVaultHelper.Models.Data;
 using KeyVaultHelper.Services;
 using KeyVaultHelper.Views;
@@ -21,44 +22,33 @@ public partial class MainWindowViewModel : ViewModelBase
     public partial KeyVaultTabViewModel? SelectedTab { get; set; }
 
     [ObservableProperty]
-    public partial bool IsCacheLoading { get; set; }
+    public partial bool IsLoadingResources { get; set; }
+
+    [ObservableProperty]
+    public partial string? ResourceLoadError { get; set; }
 
     public IAsyncRelayCommand OpenVaultCommand { get; }
 
+    public IAsyncRelayCommand RetryLoadCommand { get; }
+
     public MainWindowViewModel(AzureResourceCache resourceCache, IServiceProvider serviceProvider)
     {
-        OpenTabs = [];
-        OpenVaultCommand = new AsyncRelayCommand(OpenVaultAsync);
-
+        _resourceCache = resourceCache;
         _serviceProvider = serviceProvider;
 
-        _resourceCache = resourceCache;
-        _resourceCache.PropertyChanged += (s, e) =>
-        {
-            if (e.PropertyName == nameof(AzureResourceCache.RefreshPhase))
-            {
-                IsCacheLoading = _resourceCache.RefreshPhase is not null;
-            }
-        };
-
+        OpenTabs = [];
+        OpenVaultCommand = new AsyncRelayCommand(OpenVaultAsync);
+        RetryLoadCommand = new AsyncRelayCommand(async () => await _resourceCache.ReloadSubscriptionsAsync());
         _ = InitializeAsync();
     }
 
     /// <summary>
-    /// Initializes the index service and starts background loading of subscriptions, RGs, and vaults.
+    /// Initializes the cache and starts background loading of subscriptions, RGs, and vaults.
     /// Should be called when the window loads. Does not block the UI.
     /// </summary>
     public async Task InitializeAsync()
     {
-        try
-        {
-            await _resourceCache.ReloadSubscriptionsAsync();
-            Console.WriteLine("Initial resource cache has loaded");
-        }
-        catch (Exception ex)
-        {
-            Console.Error.WriteLine($"Error: {ex.Message}");
-        }
+        await _resourceCache.ReloadSubscriptionsAsync();
     }
 
     /// <summary>

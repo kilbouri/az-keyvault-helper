@@ -1,5 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
+using KeyVaultHelper.Models;
 using KeyVaultHelper.Models.Data;
 using KeyVaultHelper.Services;
 
@@ -46,6 +48,9 @@ public partial class OpenVaultDialogViewModel : ViewModelBase
     [ObservableProperty]
     public partial string? LoadingMessage { get; set; }
 
+    [ObservableProperty]
+    public partial string? ResourceLoadError { get; set; }
+
     public OpenVaultDialogViewModel(AzureResourceCache indexService)
     {
         _indexService = indexService;
@@ -53,43 +58,6 @@ public partial class OpenVaultDialogViewModel : ViewModelBase
         Subscriptions = [];
         FilteredResourceGroups = [];
         FilteredVaults = [];
-
-        // Bind cache loading states to this viewmodel's observable properties
-        HandleCacheRefreshPhaseChange(_indexService.RefreshPhase);
-        _indexService.PropertyChanged += (s, e) =>
-        {
-            if (e.PropertyName == nameof(AzureResourceCache.RefreshPhase))
-            {
-                HandleCacheRefreshPhaseChange(_indexService.RefreshPhase);
-            }
-        };
-    }
-
-    private void PopulateSubscriptionsDropdown()
-    {
-        Subscriptions.Clear();
-        foreach (var sub in _indexService.GetSubscriptions())
-        {
-            Subscriptions.Add(sub);
-        }
-        Console.WriteLine($"Populated subscriptions dropdown with {Subscriptions.Count} subscriptions");
-    }
-
-    private void HandleCacheRefreshPhaseChange(AzureResourceCache.CacheRefreshPhase? newPhase)
-    {
-        IsLoadingResources = newPhase is not null;
-        LoadingMessage = newPhase switch
-        {
-            AzureResourceCache.ListSubscriptionsPhase => "Loading subscriptions...",
-            AzureResourceCache.ListResourcesInSubscriptionPhase listSubPhase => $"Loading resource groups and vaults in {listSubPhase.Subscription.Name}",
-            null => null,
-            _ => throw new NotImplementedException($"Unexpected cache refresh phase: {newPhase.GetType()}")
-        };
-
-        if (!IsLoadingResources)
-        {
-            PopulateSubscriptionsDropdown();
-        }
     }
 
     partial void OnSelectedSubscriptionChanged(Subscription? value)
