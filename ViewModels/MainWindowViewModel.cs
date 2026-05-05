@@ -11,7 +11,6 @@ namespace KeyVaultHelper.ViewModels;
 
 public partial class MainWindowViewModel : ViewModelBase
 {
-    private readonly AzureResourceCache _resourceCache;
     private readonly IServiceProvider _serviceProvider;
 
     [ObservableProperty]
@@ -20,13 +19,10 @@ public partial class MainWindowViewModel : ViewModelBase
     [ObservableProperty]
     public partial KeyVaultTabViewModel? SelectedTab { get; set; }
 
-
-
     public IAsyncRelayCommand OpenVaultCommand { get; }
 
-    public MainWindowViewModel(AzureResourceCache resourceCache, IServiceProvider serviceProvider)
+    public MainWindowViewModel(IServiceProvider serviceProvider)
     {
-        _resourceCache = resourceCache;
         _serviceProvider = serviceProvider;
 
         OpenTabs = [];
@@ -39,6 +35,8 @@ public partial class MainWindowViewModel : ViewModelBase
     private async Task ShowOpenVaultDialogAsync()
     {
         var dialogViewModel = _serviceProvider.GetRequiredService<OpenVaultDialogViewModel>();
+        _ = dialogViewModel.InitializeAsync();
+
         var dialog = new OpenVaultDialog() { DataContext = dialogViewModel };
 
         var result = await dialog.ShowDialog<KeyVault?>(GetMainWindow()!);

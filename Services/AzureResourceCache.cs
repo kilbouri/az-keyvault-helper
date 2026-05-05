@@ -1,13 +1,17 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using KeyVaultHelper.Extensions;
 using KeyVaultHelper.Models.Data;
+using Microsoft.Extensions.Logging;
 
 namespace KeyVaultHelper.Services;
 
 /// <summary>
 /// Manages a hierarchical cache of subscriptions, resource groups, and key vaults.
 /// </summary>
-public partial class AzureResourceCache(AzureResourceService _azureService) : ObservableObject
+public partial class AzureResourceCache(
+    AzureResourceService _azureService,
+    ILogger<AzureResourceCache> logger
+) : ObservableObject
 {
     private sealed class SubscriptionCache : Dictionary<string, SubscriptionCache.Item>
     {
@@ -48,20 +52,29 @@ public partial class AzureResourceCache(AzureResourceService _azureService) : Ob
 
         await foreach (var subscriptionJob in subscriptionJobs)
         {
+            logger.LogInformation("Processing {SubscriptionName}", subscriptionJob.Subscription.Name);
             subscriptionProgress?.Report(subscriptionJob.Subscription);
 
             ResourceGroupCache resourceGroupCache = new();
             await foreach (var vault in subscriptionJob.Vaults.Flatten().ConfigureAwait(false).WithCancellation(cancellationToken))
             {
+                logger.LogInformation(
+                    "Caching vault {VaultId} in resource group {ResourceGroupName}",
+                    vault.Id,
+                    vault.ResourceGroup.Name
+                );
+
                 var rgVaultCache = resourceGroupCache.GetOrInsert(vault.ResourceGroup.Name, new(vault.ResourceGroup, new KeyVaultCache()));
                 rgVaultCache.KeyVaults.Add(vault.Id, new(vault));
             }
 
             newSubscriptionCache.Add(subscriptionJob.Subscription.Id, new(subscriptionJob.Subscription, resourceGroupCache));
+            logger.LogInformation("Finished processing {SubscriptionName}", subscriptionJob.Subscription.Name);
         }
 
         if (!cancellationToken.IsCancellationRequested)
         {
+            logger.LogInformation("Finished loading {SubscriptionCount} subscriptions", newSubscriptionCache.Keys.Count);
             _subscriptionCache = newSubscriptionCache;
         }
     }
