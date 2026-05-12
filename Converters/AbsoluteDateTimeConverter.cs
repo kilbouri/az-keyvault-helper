@@ -19,7 +19,7 @@ public class AbsoluteDateTimeConverter : IValueConverter
 
         if (value is not DateTimeOffset dateTime)
         {
-            return new BindingNotification(new NotSupportedException($"Only {typeof(DateTimeOffset)} is supported"), BindingErrorType.Error);
+            return new BindingNotification(new NotSupportedException($"Only {typeof(DateTimeOffset)} is supported, but {value.GetType()} was given"), BindingErrorType.Error);
         }
 
         return dateTime.ToLocalTime().ToString("G", culture ?? CultureInfo.CurrentCulture);
