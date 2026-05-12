@@ -6,6 +6,7 @@ using KeyVaultHelper.Models.Data;
 using KeyVaultHelper.Services;
 using KeyVaultHelper.Views;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace KeyVaultHelper.ViewModels;
 
@@ -59,9 +60,14 @@ public partial class MainWindowViewModel : ViewModelBase
             return;
         }
 
-        var tabViewModel = new KeyVaultTabViewModel(keyVault);
+        var resourceService = _serviceProvider.GetRequiredService<AzureResourceService>();
+        var logger = _serviceProvider.GetRequiredService<ILogger<KeyVaultTabViewModel>>();
+        var tabViewModel = new KeyVaultTabViewModel(keyVault, resourceService, logger);
         OpenTabs.Add(tabViewModel);
         SelectedTab = tabViewModel;
+
+        // Load secrets asynchronously without blocking
+        _ = tabViewModel.LoadSecretsAsync();
     }
 
     /// <summary>

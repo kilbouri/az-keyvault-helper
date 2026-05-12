@@ -97,4 +97,30 @@ public class AzureResourceService(AzureUserService azureUserService)
             yield return page.Values.Select(vault => new KeyVault(resourceGroup, vault.Id.Name));
         }
     }
+
+    /// <summary>
+    /// Lists all secrets in the specified key vault.
+    /// Currently returns mock data with simulated delay.
+    /// </summary>
+    public async Task<IEnumerable<Secret>> GetSecretsAsync(
+        KeyVault keyVault,
+        CancellationToken cancellationToken = default
+    )
+    {
+        // Simulate network delay (2-4 seconds)
+        var delay = Random.Shared.Next(2000, 4000);
+        await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+
+        // Return mock secrets
+        var now = DateTimeOffset.UtcNow;
+        return new[]
+        {
+            new Secret("DatabasePassword", "application/octet-stream", now.AddDays(-30), now.AddDays(365)),
+            new Secret("ApiKey-Production", "text/plain", now.AddDays(-15), now.AddDays(180)),
+            new Secret("ConnectionString", "application/json", now.AddDays(-5), null),
+            new Secret("JwtSecret", "application/octet-stream", now.AddDays(-60), now.AddDays(90)),
+            new Secret("StorageAccountKey", null, now.AddDays(-45), null),
+            new Secret("CertificatePassword", "text/plain", now.AddDays(-2), now.AddDays(730)),
+        };
+    }
 }

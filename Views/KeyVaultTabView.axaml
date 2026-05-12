@@ -2,10 +2,68 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:vm="using:KeyVaultHelper.ViewModels"
              xmlns:v="using:KeyVaultHelper.Views"
+             xmlns:dg="using:Avalonia.Controls"
              x:Class="KeyVaultHelper.Views.KeyVaultTabView"
              x:DataType="vm:KeyVaultTabViewModel">
     <DockPanel>
         <!-- Breadcrumb -->
-        <TextBlock DockPanel.Dock="Top" Text="{Binding BreadcrumbPath}"/>
+        <TextBlock DockPanel.Dock="Top" Text="{Binding BreadcrumbPath}" Margin="12,12,12,0" FontSize="12" Foreground="#666666"/>
+
+        <!-- Loading Indicator -->
+        <Border DockPanel.Dock="Top"
+                IsVisible="{Binding IsLoadingSecrets}"
+                Background="#F0F0F0"
+                CornerRadius="4"
+                Margin="12,12,12,0"
+                Padding="12">
+            <StackPanel>
+                <ProgressBar IsIndeterminate="True" Height="4" Margin="0,0,0,8"/>
+                <TextBlock Text="{Binding LoadingMessage}"
+                           Foreground="#666666"
+                           FontSize="12"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Error Indicator -->
+        <Border DockPanel.Dock="Top"
+                IsVisible="{Binding SecretLoadError, Converter={x:Static StringConverters.IsNotNullOrEmpty}}"
+                Background="#FFE6E6"
+                CornerRadius="4"
+                Margin="12,12,12,0"
+                Padding="12"
+                BorderThickness="1"
+                BorderBrush="#FF9999">
+            <StackPanel>
+                <TextBlock Text="{Binding SecretLoadError}"
+                           Foreground="#CC0000"
+                           FontSize="12"
+                           TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Secrets Table -->
+        <dg:DataGrid ItemsSource="{Binding Secrets}"
+                     IsEnabled="{Binding !IsLoadingSecrets}"
+                     AutoGenerateColumns="False"
+                     CanUserReorderColumns="False"
+                     CanUserResizeColumns="True"
+                     CanUserSortColumns="True"
+                     Margin="12,12,12,12">
+            <dg:DataGrid.Columns>
+                <dg:DataGridTextColumn Header="Secret Name"
+                                       Binding="{Binding Name}"
+                                       Width="*"/>
+                <dg:DataGridTextColumn Header="Content Type"
+                                       Binding="{Binding ContentType}"
+                                       Width="200"/>
+                <dg:DataGridTextColumn Header="Last Modified"
+                                       Binding="{Binding LastModifiedDate}"
+                                       Width="180"/>
+                <dg:DataGridTextColumn Header="Expiry Date"
+                                       Binding="{Binding ExpiryDate}"
+                                       Width="180"/>
+            </dg:DataGrid.Columns>
+        </dg:DataGrid>
     </DockPanel>
 </UserControl>
