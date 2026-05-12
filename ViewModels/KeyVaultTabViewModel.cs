@@ -1,6 +1,5 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 using KeyVaultHelper.Extensions;
 using KeyVaultHelper.Models.Data;
 using KeyVaultHelper.Services;

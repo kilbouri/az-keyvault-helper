@@ -12,16 +12,17 @@ public class AbsoluteDateTimeConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo? culture)
     {
-        if (value is not DateTimeOffset dateTime)
+        if (value is null)
+        {
             return null;
+        }
 
-        // Convert to local timezone
-        var localTime = dateTime.ToLocalTime();
+        if (value is not DateTimeOffset dateTime)
+        {
+            return new BindingNotification(new NotSupportedException($"Only {typeof(DateTimeOffset)} is supported"), BindingErrorType.Error);
+        }
 
-        // Use the current culture or provided culture
-        var cultureToUse = culture ?? CultureInfo.CurrentCulture;
-
-        return localTime.ToString("G", cultureToUse);
+        return dateTime.ToLocalTime().ToString("G", culture ?? CultureInfo.CurrentCulture);
     }
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo? culture)
