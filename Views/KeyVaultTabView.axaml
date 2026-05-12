@@ -3,8 +3,13 @@
              xmlns:vm="using:KeyVaultHelper.ViewModels"
              xmlns:v="using:KeyVaultHelper.Views"
              xmlns:dg="using:Avalonia.Controls"
+             xmlns:conv="using:KeyVaultHelper.Converters"
              x:Class="KeyVaultHelper.Views.KeyVaultTabView"
              x:DataType="vm:KeyVaultTabViewModel">
+    <UserControl.Resources>
+        <conv:RelativeDateTimeConverter x:Key="RelativeDateTimeConverter"/>
+        <conv:AbsoluteDateTimeConverter x:Key="AbsoluteDateTimeConverter"/>
+    </UserControl.Resources>
     <DockPanel>
         <!-- Breadcrumb -->
         <TextBlock DockPanel.Dock="Top" Text="{Binding BreadcrumbPath}" Margin="12,12,12,0" FontSize="12" Foreground="#666666"/>
@@ -53,16 +58,30 @@
             <dg:DataGrid.Columns>
                 <dg:DataGridTextColumn Header="Secret Name"
                                        Binding="{Binding Name}"
+                                       IsReadOnly="True"
                                        Width="*"/>
                 <dg:DataGridTextColumn Header="Content Type"
                                        Binding="{Binding ContentType}"
+                                       IsReadOnly="True"
                                        Width="200"/>
-                <dg:DataGridTextColumn Header="Last Modified"
-                                       Binding="{Binding LastModifiedDate}"
-                                       Width="180"/>
-                <dg:DataGridTextColumn Header="Expiry Date"
-                                       Binding="{Binding ExpiryDate}"
-                                       Width="180"/>
+                <dg:DataGridTemplateColumn Header="Last Modified" Width="180" IsReadOnly="True">
+                    <dg:DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding LastModifiedDate, Converter={StaticResource RelativeDateTimeConverter}}"
+                                       VerticalAlignment="Center"
+                                       ToolTip.Tip="{Binding LastModifiedDate, Converter={StaticResource AbsoluteDateTimeConverter}}"/>
+                        </DataTemplate>
+                    </dg:DataGridTemplateColumn.CellTemplate>
+                </dg:DataGridTemplateColumn>
+                <dg:DataGridTemplateColumn Header="Expiry Date" Width="180" IsReadOnly="True">
+                    <dg:DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding ExpiryDate, Converter={StaticResource RelativeDateTimeConverter}}"
+                                       VerticalAlignment="Center"
+                                       ToolTip.Tip="{Binding ExpiryDate, Converter={StaticResource AbsoluteDateTimeConverter}}"/>
+                        </DataTemplate>
+                    </dg:DataGridTemplateColumn.CellTemplate>
+                </dg:DataGridTemplateColumn>
             </dg:DataGrid.Columns>
         </dg:DataGrid>
     </DockPanel>
