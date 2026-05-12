@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using KeyVaultHelper.Extensions;
 using KeyVaultHelper.Models.Data;
 using KeyVaultHelper.Services;
 using Microsoft.Extensions.Logging;
@@ -45,17 +46,11 @@ public partial class KeyVaultTabViewModel(KeyVault _keyVault, AzureResourceServi
 
         try
         {
-            _logger.LogInformation("Fetching secrets from service for {KeyVaultName}", KeyVaultName);
-            var secrets = await _resourceService.GetSecretsAsync(_keyVault, cancellationToken);
-            _logger.LogInformation("Received {SecretCount} secrets", secrets.Count());
-
-            foreach (var secret in secrets)
+            var secrets = _resourceService.GetSecretsAsync(_keyVault, cancellationToken).Flatten();
+            await foreach (var secret in secrets)
             {
-                _logger.LogDebug("Adding secret: {SecretName}", secret.Name);
                 Secrets.Add(secret);
             }
-
-            _logger.LogInformation("Total secrets in collection: {TotalCount}", Secrets.Count);
         }
         catch (OperationCanceledException)
         {
