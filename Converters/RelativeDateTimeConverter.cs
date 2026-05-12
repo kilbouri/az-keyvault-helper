@@ -53,7 +53,7 @@ public class RelativeDateTimeConverter : IValueConverter
         const int ONE_HOUR = ONE_MINUTE * 60;
         const int ONE_DAY = ONE_HOUR * 24;
 
-        // Per isPast above, negative numbers of seconds indicate 
+        // Per isPast above, negative numbers of seconds indicate the past
         return diff.TotalSeconds switch
         {
             <= -ONE_DAY => $"{Math.Abs(diff.Days)} {Pluralize(diff.Days, "day", "days")} ago",
